@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Materials Tracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --brand: #1a1a1a;
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.18);
+    --text: #1a1a1a;
+    --text2: #666;
+    --text3: #999;
+    --blue-bg: #e8f0fe;
+    --blue-text: #1a56db;
+    --amber-bg: #fef3c7;
+    --amber-text: #92400e;
+    --red-bg: #fee2e2;
+    --red-text: #991b1b;
+    --green-bg: #dcfce7;
+    --green-text: #166534;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); font-family: 'Georgia', serif; color: var(--text); }
+  body { display: flex; flex-direction: column; align-items: center; }
+  .app { width: 100%; max-width: 480px; min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
+  .appbar { padding: 16px 20px 0; display: flex; justify-content: space-between; align-items: center; }
+  .appbar-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .admin-btns { display: flex; gap: 6px; }
+  .admin-btn { font-size: 12px; padding: 6px 12px; border: 1px solid var(--border2); border-radius: 999px; background: var(--surface); color: var(--text2); cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: 'Georgia', serif; transition: all 0.15s; }
+  .admin-btn:active { background: var(--surface2); }
+  .admin-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .content { padding: 16px 20px 32px; flex: 1; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .sn-block { background: var(--brand); border-radius: var(--radius); padding: 20px 18px 22px; margin-bottom: 16px; }
+  .sn-input-label { font-size: 10px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+  .sn-input-row { display: flex; gap: 8px; }
+  .sn-input-row input { flex: 1; font-size: 20px; font-weight: 700; letter-spacing: .05em; padding: 14px 16px; border-radius: 10px; border: none; background: rgba(255,255,255,0.12); color: #fff; outline: none; font-family: 'Georgia', serif; }
+  .sn-input-row input::placeholder { color: rgba(255,255,255,0.35); }
+  .sn-input-row button { padding: 0 18px; font-size: 20px; border-radius: 10px; border: none; background: rgba(255,255,255,0.18); color: #fff; cursor: pointer; }
+  .main-nav { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-bottom: 10px; }
+  .nav-btn { padding: 20px 10px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text2); cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; font-family: 'Georgia', serif; transition: all 0.15s; }
+  .nav-btn i { font-size: 28px; }
+  .nav-btn:active, .nav-btn.active { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .inv-btn { width: 100%; padding: 15px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; font-family: 'Georgia', serif; margin-bottom: 16px; }
+  .inv-btn i { font-size: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .card-sn-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 3px; }
+  .card-sn { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .badge { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 600; gap: 4px; }
+  .badge-store { background: var(--blue-bg); color: var(--blue-text); }
+  .badge-onsite { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-overdue { background: var(--red-bg); color: var(--red-text); }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+  .card-head-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+  .detail-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--border); font-size: 14px; }
+  .detail-label { color: var(--text2); }
+  .detail-val { font-weight: 600; color: var(--text); text-align: right; max-width: 58%; word-break: break-word; }
+  .detail-val.overdue { color: var(--red-text); }
+  .card-actions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 14px; }
+  .card-actions button { padding: 12px 8px; font-size: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface2); color: var(--text); cursor: pointer; font-family: 'Georgia', serif; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .move-panel { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; margin-top: 12px; }
+  .field-group { margin-bottom: 12px; }
+  .field-group label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; font-weight: 600; }
+  .field-group input, .field-group select { width: 100%; font-size: 15px; padding: 10px 12px; border: 1px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-family: 'Georgia', serif; outline: none; }
+  .btn-confirm-move { width: 100%; padding: 15px; font-size: 16px; font-weight: 700; border-radius: var(--radius-sm); margin-top: 8px; cursor: pointer; border: none; background: #1a1a1a; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Georgia', serif; }
+  .btn-tested { width: 100%; padding: 15px; font-size: 15px; font-weight: 700; border-radius: var(--radius-sm); margin-bottom: 10px; cursor: pointer; border: none; background: #166534; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Georgia', serif; }
+  .btn-primary { background: var(--blue-bg); color: var(--blue-text); border-color: rgba(26,86,219,0.2); }
+  .btn-full { width: 100%; padding: 13px; font-size: 15px; border-radius: var(--radius-sm); margin-top: 6px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); cursor: pointer; font-family: 'Georgia', serif; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-full.primary { background: var(--brand); color: #fff; border-color: var(--brand); font-weight: 700; }
+  .btn-export { width: 100%; padding: 14px; font-size: 14px; font-weight: 700; border-radius: var(--radius-sm); margin-bottom: 14px; cursor: pointer; border: 1px solid rgba(22,101,52,0.25); background: var(--green-bg); color: var(--green-text); display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Georgia', serif; }
+  .overdue-banner { background: var(--red-bg); color: var(--red-text); border: 1px solid rgba(153,27,27,0.2); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .toast { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--brand); color: #fff; border-radius: 999px; padding: 12px 24px; font-size: 14px; font-weight: 600; z-index: 999; white-space: nowrap; font-family: 'Georgia', serif; box-shadow: 0 4px 24px rgba(0,0,0,0.2); }
+  .toast.show { display: block; }
+  .toast.error { background: #991b1b; }
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 14px; }
+  .empty i { font-size: 32px; display: block; margin-bottom: 10px; }
+  .section-hint { font-size: 13px; color: var(--text3); margin-bottom: 16px; }
+  .sync-bar { display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 11px; color: var(--text3); margin-bottom: 12px; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #16a34a; flex-shrink: 0; }
+  .sync-dot.syncing { background: #d97706; }
+  .sync-dot.error { background: #dc2626; }
+  .log-row { padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; }
+  .log-row-main { font-size: 13px; }
+  .log-row-main span { font-weight: 700; }
+  .log-time { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .inv-summary { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
+  .inv-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 10px; text-align: center; }
+  .inv-stat-num { font-size: 26px; font-weight: 700; }
+  .inv-stat-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .inv-stat.danger .inv-stat-num { color: var(--red-text); }
+  .inv-search-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+  .inv-search-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .inv-search-row:last-child { margin-bottom: 0; }
+  .inv-search-icon { font-size: 16px; color: var(--text3); flex-shrink: 0; width: 20px; text-align: center; }
+  .inv-search-row input { flex: 1; font-size: 14px; padding: 8px 10px; border: 1px solid var(--border2); border-radius: var(--radius-sm); font-family: 'Georgia', serif; outline: none; }
+  .inv-clear { font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 2px 6px; font-family: 'Georgia', serif; }
+  .inv-filter-row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin-bottom: 14px; }
+  .inv-filter-btn { padding: 9px 4px; font-size: 13px; font-weight: 600; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text2); cursor: pointer; text-align: center; font-family: 'Georgia', serif; }
+  .inv-filter-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .inv-group { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+  .inv-group-head { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .inv-desc { font-size: 15px; font-weight: 700; flex: 1; padding-right: 8px; }
+  .inv-counts { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .inv-pill { font-size: 11px; padding: 3px 8px; border-radius: 999px; font-weight: 600; }
+  .inv-pill-store { background: var(--blue-bg); color: var(--blue-text); }
+  .inv-pill-onsite { background: var(--amber-bg); color: var(--amber-text); }
+  .inv-pill-overdue { background: var(--red-bg); color: var(--red-text); }
+  .inv-sns { border-top: 1px solid var(--border); padding: 10px 16px; }
+  .inv-sn-item { font-size: 13px; color: var(--text2); padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .inv-sn-item:last-child { border-bottom: none; }
+  .inv-sn-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .inv-sn-top span:first-child { font-weight: 700; color: var(--text); }
+  .inv-sn-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .inv-sn-sub.overdue { color: var(--red-text); font-weight: 600; }
+  .inv-results-label { font-size: 12px; color: var(--text3); margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="appbar">
+    <div class="appbar-title" id="appbar-title">Materials</div>
+    <div class="admin-btns" id="admin-btns">
+      <button class="admin-btn" id="btn-add" onclick="switchTab('add')"><i class="ti ti-plus"></i> Add</button>
+      <button class="admin-btn" id="btn-log" onclick="switchTab('log')"><i class="ti ti-history"></i> Log</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="toast" id="toast"></div>
+    <div class="panel active" id="panel-lookup">
+      <div class="sync-bar"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting...</span></div>
+      <div class="sn-block">
+        <div class="sn-input-label">SN Number</div>
+        <div class="sn-input-row">
+          <input type="text" id="lookup-sn" placeholder="e.g. SN-001" oninput="liveSearch()" autocomplete="off" autocapitalize="characters" />
+          <button onclick="doLookup()"><i class="ti ti-search"></i></button>
+        </div>
+      </div>
+      <div class="main-nav">
+        <button class="nav-btn" id="btn-store" onclick="switchTab('store')"><i class="ti ti-building-warehouse"></i>Store</button>
+        <button class="nav-btn" id="btn-onsite" onclick="switchTab('onsite')"><i class="ti ti-crane"></i>Onsite</button>
+      </div>
+      <button class="inv-btn" onclick="switchTab('inventory')"><i class="ti ti-clipboard-list"></i> Inventory audit</button>
+      <div id="lookup-result"></div>
+    </div>
+    <div class="panel" id="panel-add">
+      <p class="section-hint">Register a new item into the system</p>
+      <div class="field-group"><label>SN number</label><input type="text" id="add-sn" placeholder="e.g. SN-001" autocapitalize="characters" /></div>
+      <div class="field-group"><label>Description</label><input type="text" id="add-desc" placeholder="e.g. 32A distribution panel" /></div>
+      <div class="field-group"><label>Next test due date</label><input type="date" id="add-testdate" /></div>
+      <div class="field-group"><label>Location</label>
+        <select id="add-loc" onchange="toggleOnsiteFields()">
+          <option value="Store">Store</option>
+          <option value="Onsite">Onsite</option>
+        </select>
+      </div>
+      <div id="onsite-fields" style="display:none">
+        <div class="field-group"><label>Site location</label><input type="text" id="add-site" placeholder="e.g. Level 2, Block B" /></div>
+        <div class="field-group"><label>Company</label><input type="text" id="add-company" placeholder="e.g. ABC Ltd" /></div>
+      </div>
+      <button class="btn-full primary" onclick="addItem()"><i class="ti ti-check"></i> Register item</button>
+      <button class="btn-full" style="margin-top:8px" onclick="switchTab('lookup')"><i class="ti ti-arrow-left"></i> Back</button>
+    </div>
+    <div class="panel" id="panel-store">
+      <p class="section-hint">Items currently in store</p>
+      <div id="store-list"></div>
+      <button class="btn-full" onclick="switchTab('lookup')"><i class="ti ti-arrow-left"></i> Back</button>
+    </div>
+    <div class="panel" id="panel-onsite">
+      <p class="section-hint">Items currently onsite</p>
+      <div id="onsite-list"></div>
+      <button class="btn-full" onclick="switchTab('lookup')"><i class="ti ti-arrow-left"></i> Back</button>
+    </div>
+    <div class="panel" id="panel-inventory">
+      <div class="inv-summary">
+        <div class="inv-stat"><div class="inv-stat-num" id="inv-total-store">0</div><div class="inv-stat-label">In store</div></div>
+        <div class="inv-stat"><div class="inv-stat-num" id="inv-total-onsite">0</div><div class="inv-stat-label">Onsite</div></div>
+        <div class="inv-stat danger" style="grid-column:1/-1"><div class="inv-stat-num" id="inv-total-overdue">0</div><div class="inv-stat-label">Overdue tests</div></div>
+      </div>
+      <button class="btn-export" onclick="exportCSV()"><i class="ti ti-table-export"></i> Export to spreadsheet</button>
+      <div class="inv-search-block">
+        <div class="inv-search-row"><i class="ti ti-tool inv-search-icon"></i><input type="text" id="inv-search-desc" placeholder="Description e.g. 32A" oninput="renderInventory()" /><button class="inv-clear" onclick="clearSearch('inv-search-desc')">Clear</button></div>
+        <div class="inv-search-row"><i class="ti ti-building inv-search-icon"></i><input type="text" id="inv-search-co" placeholder="Company e.g. JKV" oninput="renderInventory()" /><button class="inv-clear" onclick="clearSearch('inv-search-co')">Clear</button></div>
+        <div class="inv-search-row"><i class="ti ti-map-pin inv-search-icon"></i><input type="text" id="inv-search-loc" placeholder="Location e.g. Level 2" oninput="renderInventory()" /><button class="inv-clear" onclick="clearSearch('inv-search-loc')">Clear</button></div>
+      </div>
+      <div class="inv-filter-row">
+        <button class="inv-filter-btn active" onclick="setInvFilter('all',this)">All</button>
+        <button class="inv-filter-btn" onclick="setInvFilter('Store',this)">Store</button>
+        <button class="inv-filter-btn" onclick="setInvFilter('Onsite',this)">Onsite</button>
+      </div>
+      <div id="inv-results-label" class="inv-results-label"></div>
+      <div id="inv-list"></div>
+      <button class="btn-full" onclick="switchTab('lookup')"><i class="ti ti-arrow-left"></i> Back</button>
+    </div>
+    <div class="panel" id="panel-log">
+      <p class="section-hint">All activity, newest first</p>
+      <button class="btn-export" onclick="exportLogCSV()"><i class="ti ti-table-export"></i> Export log to spreadsheet</button>
+      <div id="log-list"></div>
+      <button class="btn-full" onclick="switchTab('lookup')"><i class="ti ti-arrow-left"></i> Back</button>
+    </div>
+  </div>
+</div>
+<script>
+const API = '';
+let items=[], logs=[], invFilter='all';
+const adminOnlyTabs=['lookup','add','log'];
+const today=new Date(); today.setHours(0,0,0,0);
+
+function isOverdue(d){if(!d)return false;const x=new Date(d);x.setHours(0,0,0,0);return x<today;}
+function addThreeMonths(){const d=new Date();d.setMonth(d.getMonth()+3);return d.toISOString().split('T')[0];}
+function fmtDate(s){if(!s)return'—';return new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+function setSyncStatus(state){const dot=document.getElementById('sync-dot');const lbl=document.getElementById('sync-label');if(!dot)return;dot.className='sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');lbl.textContent=state==='syncing'?'Syncing...':state==='error'?'Connection error':'Live — connected';}
+function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(err?' error':'')+' show';setTimeout(()=>t.classList.remove('show'),3000);}
+function fmt(d){return d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' · '+d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
+function addLog(sn,msg){logs.unshift({sn,msg,time:new Date()});}
+function toggleOnsiteFields(){document.getElementById('onsite-fields').style.display=document.getElementById('add-loc').value==='Onsite'?'block':'none';}
+function clearSearch(id){document.getElementById(id).value='';renderInventory();}
+
+async function fetchItems(){
+  setSyncStatus('syncing');
+  try{
+    const r=await fetch(API+'/api/items');
+    const d=await r.json();
+    if(d.error)throw new Error(d.error);
+    items=d.map(rec=>({id:rec.id,sn:rec.fields['SN Number']||'',desc:rec.fields['Description']||'',location:rec.fields['Location']||'Store',site:rec.fields['Site Location']||'',company:rec.fields['Company']||'',testdate:rec.fields['Next Test Due']||''}));
+    setSyncStatus('ok');
+  }catch(e){setSyncStatus('error');showToast('Connection error: '+e.message,true);}
+}
+
+function switchTab(name){
+  ['lookup','add','store','onsite','inventory','log'].forEach(n=>{const p=document.getElementById('panel-'+n);if(p)p.classList.toggle('active',n===name);});
+  document.getElementById('admin-btns').style.display=adminOnlyTabs.includes(name)?'flex':'none';
+  ['add','log','store','onsite'].forEach(n=>{const b=document.getElementById('btn-'+n);if(b)b.classList.toggle('active',n===name);});
+  const titles={lookup:'Materials',store:'Store',onsite:'Onsite',add:'Add item',log:'Activity log',inventory:'Inventory audit'};
+  document.getElementById('appbar-title').textContent=titles[name]||'Materials';
+  if(name==='store')renderList('Store');
+  if(name==='onsite')renderList('Onsite');
+  if(name==='inventory')renderInventory();
+  if(name==='log')renderLog();
+  if(name==='lookup'){document.getElementById('lookup-result').innerHTML='';document.getElementById('lookup-sn').value='';}
+}
+
+function setInvFilter(f,btn){invFilter=f;document.querySelectorAll('.inv-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderInventory();}
+
+async function addItem(){
+  const sn=document.getElementById('add-sn').value.trim().toUpperCase();
+  const desc=document.getElementById('add-desc').value.trim();
+  const testdate=document.getElementById('add-testdate').value;
+  const loc=document.getElementById('add-loc').value;
+  const company=loc==='Onsite'?document.getElementById('add-company').value.trim():'';
+  const site=loc==='Onsite'?document.getElementById('add-site').value.trim():'';
+  if(!sn||!desc||!testdate){alert('SN number, description and test date are required.');return;}
+  if(items.find(i=>i.sn===sn)){alert('That SN already exists.');return;}
+  try{
+    setSyncStatus('syncing');
+    const fields={'SN Number':sn,'Description':desc,'Location':loc,'Next Test Due':testdate};
+    if(site)fields['Site Location']=site;
+    if(company)fields['Company']=company;
+    const r=await fetch(API+'/api/items',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});
+    const rec=await r.json();
+    if(rec.error)throw new Error(rec.error);
+    items.push({id:rec.id,sn,desc,location:loc,company,site,testdate});
+    addLog(sn,`Registered: "${desc}" — ${loc}`);
+    ['add-sn','add-desc','add-site','add-company'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('add-testdate').value='';
+    document.getElementById('add-loc').value='Store';
+    toggleOnsiteFields();
+    setSyncStatus('ok');
+    showToast('✓ Item saved');
+    switchTab('lookup');
+  }catch(e){setSyncStatus('error');showToast('Save failed: '+e.message,true);}
+}
+
+function liveSearch(){const val=document.getElementById('lookup-sn').value.trim().toUpperCase();if(val.length<2){document.getElementById('lookup-result').innerHTML='';return;}const item=items.find(i=>i.sn===val);if(item)renderItemCard(item);else document.getElementById('lookup-result').innerHTML='';}
+function doLookup(){const val=document.getElementById('lookup-sn').value.trim().toUpperCase();if(!val)return;const item=items.find(i=>i.sn===val);if(item)renderItemCard(item);else document.getElementById('lookup-result').innerHTML='<div class="empty"><i class="ti ti-search-off"></i>No item found</div>';}
+
+function renderItemCard(item){
+  const el=document.getElementById('lookup-result');
+  const isOnsite=item.location==='Onsite';
+  const overdue=isOverdue(item.testdate);
+  let rows=`<div class="detail-row"><span class="detail-label">Description</span><span class="detail-val">${item.desc}</span></div>`;
+  if(isOnsite){rows+=`<div class="detail-row"><span class="detail-label">Location</span><span class="detail-val">${item.site||'—'}</span></div>`;rows+=`<div class="detail-row"><span class="detail-label">Company</span><span class="detail-val">${item.company||'—'}</span></div>`;}
+  rows+=`<div class="detail-row"><span class="detail-label">Next test due</span><span class="detail-val ${overdue?'overdue':''}">${fmtDate(item.testdate)}${overdue?' ⚠':''}</span></div>`;
+  const moveOpts=isOnsite?'<option value="Store">Back to store</option>':'<option value="Onsite">Move onsite</option>';
+  el.innerHTML=`<div class="card">${overdue?`<div class="overdue-banner"><i class="ti ti-alert-triangle"></i> Test overdue — action required</div>`:''}
+    <div class="card-head"><div><div class="card-sn-label">SN Number</div><div class="card-sn">${item.sn}</div></div>
+    <div class="card-head-badges"><span class="badge ${isOnsite?'badge-onsite':'badge-store'}">${isOnsite?'Onsite':'In store'}</span>${overdue?'<span class="badge badge-overdue"><i class="ti ti-alert-triangle" style="font-size:11px"></i> Overdue</span>':''}</div></div>
+    ${rows}
+    ${overdue?`<button class="btn-tested" onclick="markTested('${item.id}','${item.sn}')"><i class="ti ti-circle-check"></i> Mark as tested — next due +3 months</button>`:''}
+    <div class="move-panel" id="mf-${item.sn}" style="display:none">
+      <div class="field-group"><label>Move to</label><select id="mv-to-${item.sn}">${moveOpts}</select></div>
+      ${!isOnsite?`<div class="field-group"><label>Site location</label><input type="text" id="mv-site-${item.sn}" placeholder="e.g. Level 2" /></div><div class="field-group"><label>Company</label><input type="text" id="mv-co-${item.sn}" placeholder="e.g. ABC Ltd" /></div>`:''}
+      <button class="btn-confirm-move" onclick="confirmMove('${item.id}','${item.sn}')"><i class="ti ti-circle-check"></i> Confirm move</button>
+    </div>
+    <div class="card-actions"><button onclick="toggleMove('${item.sn}')"><i class="ti ti-arrows-exchange"></i> Move</button><button onclick="editItem('${item.id}','${item.sn}')"><i class="ti ti-edit"></i> Edit</button></div>
+  </div>`;
+}
+
+function toggleMove(sn){const mf=document.getElementById('mf-'+sn);mf.style.display=mf.style.display==='none'?'block':'none';}
+
+async function markTested(id,sn){
+  const newDate=addThreeMonths();
+  try{
+    setSyncStatus('syncing');
+    const r=await fetch(API+'/api/items/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({'Next Test Due':newDate})});
+    const d=await r.json();if(d.error)throw new Error(d.error);
+    const item=items.find(i=>i.id===id);if(item)item.testdate=newDate;
+    addLog(sn,`Marked as tested — next due ${fmtDate(newDate)}`);
+    setSyncStatus('ok');showToast('✓ Tested — next due '+fmtDate(newDate));
+    const updated=items.find(i=>i.id===id);if(updated)renderItemCard(updated);
+  }catch(e){setSyncStatus('error');showToast('Update failed: '+e.message,true);}
+}
+
+async function confirmMove(id,sn){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  const to=document.getElementById('mv-to-'+sn).value;
+  const siteEl=document.getElementById('mv-site-'+sn);
+  const coEl=document.getElementById('mv-co-'+sn);
+  const site=siteEl?siteEl.value.trim():'';
+  const company=coEl?coEl.value.trim():'';
+  try{
+    setSyncStatus('syncing');
+    const r=await fetch(API+'/api/items/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({'Location':to,'Site Location':to==='Onsite'?site:'','Company':to==='Onsite'?company:''})});
+    const d=await r.json();if(d.error)throw new Error(d.error);
+    item.location=to;item.site=to==='Onsite'?site:'';item.company=to==='Onsite'?company:'';
+    addLog(sn,`Moved to ${to==='Onsite'?'onsite':'store'}${site?' — '+site:''}${company?' ('+company+')':''}`);
+    setSyncStatus('ok');showToast('✓ Move saved');renderItemCard(item);
+  }catch(e){setSyncStatus('error');showToast('Move failed: '+e.message,true);}
+}
+
+async function editItem(id,sn){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  document.getElementById('lookup-result').innerHTML=`<div class="card">
+    <div class="card-sn-label" style="margin-bottom:6px">Editing: ${sn}</div>
+    <div class="field-group"><label>Description</label><input type="text" id="ed-desc" value="${item.desc}" /></div>
+    <div class="field-group"><label>Next test due date</label><input type="date" id="ed-testdate" value="${item.testdate||''}" /></div>
+    <div class="field-group"><label>Site location</label><input type="text" id="ed-site" value="${item.site}" placeholder="e.g. Level 2" /></div>
+    <div class="field-group"><label>Company</label><input type="text" id="ed-co" value="${item.company}" placeholder="e.g. ABC Ltd" /></div>
+    <div class="card-actions">
+      <button class="btn-primary" onclick="saveEdit('${id}','${sn}')"><i class="ti ti-check"></i> Save</button>
+      <button onclick="renderItemCard(items.find(i=>i.id==='${id}'))"><i class="ti ti-x"></i> Cancel</button>
+    </div>
+  </div>`;
+}
+
+async function saveEdit(id,sn){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  const desc=document.getElementById('ed-desc').value.trim()||item.desc;
+  const testdate=document.getElementById('ed-testdate').value||item.testdate;
+  const site=document.getElementById('ed-site').value.trim();
+  const company=document.getElementById('ed-co').value.trim();
+  try{
+    setSyncStatus('syncing');
+    const r=await fetch(API+'/api/items/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({'Description':desc,'Next Test Due':testdate,'Site Location':site,'Company':company})});
+    const d=await r.json();if(d.error)throw new Error(d.error);
+    item.desc=desc;item.testdate=testdate;item.site=site;item.company=company;
+    addLog(sn,'Details updated');setSyncStatus('ok');showToast('✓ Saved');renderItemCard(item);
+  }catch(e){setSyncStatus('error');showToast('Save failed: '+e.message,true);}
+}
+
+function renderInventory(){
+  const descQ=document.getElementById('inv-search-desc').value.trim().toLowerCase();
+  const coQ=document.getElementById('inv-search-co').value.trim().toLowerCase();
+  const locQ=document.getElementById('inv-search-loc').value.trim().toLowerCase();
+  document.getElementById('inv-total-store').textContent=items.filter(i=>i.location==='Store').length;
+  document.getElementById('inv-total-onsite').textContent=items.filter(i=>i.location==='Onsite').length;
+  document.getElementById('inv-total-overdue').textContent=items.filter(i=>isOverdue(i.testdate)).length;
+  let filtered=items;
+  if(invFilter!=='all')filtered=filtered.filter(i=>i.location===invFilter);
+  if(descQ)filtered=filtered.filter(i=>i.desc.toLowerCase().includes(descQ));
+  if(coQ)filtered=filtered.filter(i=>i.company.toLowerCase().includes(coQ));
+  if(locQ)filtered=filtered.filter(i=>i.site.toLowerCase().includes(locQ));
+  const groups={};
+  filtered.forEach(item=>{const key=item.desc.trim().toLowerCase();if(!groups[key])groups[key]={desc:item.desc,Store:[],Onsite:[]};groups[key][item.location].push(item);});
+  const list=document.getElementById('inv-list');
+  const keys=Object.keys(groups);
+  const anySearch=descQ||coQ||locQ;
+  document.getElementById('inv-results-label').textContent=anySearch?(filtered.length===0?'No results':`${filtered.length} item${filtered.length!==1?'s':''} matched`):'';
+  if(!keys.length){list.innerHTML='<div class="empty"><i class="ti ti-clipboard"></i>'+(anySearch?'No items match':'No items yet')+'</div>';return;}
+  list.innerHTML=keys.sort().map(k=>{
+    const g=groups[k];
+    const overdueCount=[...g.Store,...g.Onsite].filter(i=>isOverdue(i.testdate)).length;
+    const storePill=g.Store.length?`<span class="inv-pill inv-pill-store">${g.Store.length} store</span>`:'';
+    const onsitePill=g.Onsite.length?`<span class="inv-pill inv-pill-onsite">${g.Onsite.length} onsite</span>`:'';
+    const overduePill=overdueCount?`<span class="inv-pill inv-pill-overdue">⚠ ${overdueCount} overdue</span>`:'';
+    const allItems=[
+      ...g.Store.map(it=>{const od=isOverdue(it.testdate);return`<div class="inv-sn-item"><div class="inv-sn-top"><span>${it.sn}</span><span style="font-size:11px;color:var(--text3)">Store</span></div><div class="inv-sn-sub ${od?'overdue':''}">Test due: ${fmtDate(it.testdate)}${od?' ⚠':''}</div></div>`;}),
+      ...g.Onsite.map(it=>{const od=isOverdue(it.testdate);return`<div class="inv-sn-item"><div class="inv-sn-top"><span>${it.sn}</span><span style="font-size:11px;color:var(--text3)">Onsite</span></div><div class="inv-sn-sub">${[it.site,it.company].filter(Boolean).join(' · ')}</div><div class="inv-sn-sub ${od?'overdue':''}">Test due: ${fmtDate(it.testdate)}${od?' ⚠':''}</div></div>`;})
+    ].join('');
+    return`<div class="inv-group"><div class="inv-group-head"><div class="inv-desc">${g.desc}</div><div class="inv-counts">${storePill}${onsitePill}${overduePill}</div></div>${allItems?`<div class="inv-sns">${allItems}</div>`:''}</div>`;
+  }).join('');
+}
+
+function renderList(loc){
+  const list=document.getElementById(loc.toLowerCase()+'-list');
+  const filtered=items.filter(i=>i.location===loc);
+  if(!filtered.length){list.innerHTML='<div class="empty"><i class="ti ti-package"></i>No items here yet</div>';return;}
+  list.innerHTML=filtered.map(item=>{const od=isOverdue(item.testdate);return`<div class="card" style="cursor:pointer" onclick="jumpToSN('${item.sn}')">
+    <div class="card-head" style="margin-bottom:8px"><div><div class="card-sn-label">SN Number</div><div class="card-sn">${item.sn}</div></div>
+    <div class="card-head-badges">${od?'<span class="badge badge-overdue"><i class="ti ti-alert-triangle" style="font-size:11px"></i> Overdue</span>':''}<i class="ti ti-chevron-right" style="font-size:20px;color:var(--text3)"></i></div></div>
+    <div class="detail-row"><span class="detail-label">Description</span><span class="detail-val">${item.desc}</span></div>
+    ${loc==='Onsite'?`<div class="detail-row"><span class="detail-label">Location</span><span class="detail-val">${item.site||'—'}</span></div>`:''}
+    ${loc==='Onsite'?`<div class="detail-row"><span class="detail-label">Company</span><span class="detail-val">${item.company||'—'}</span></div>`:''}
+    <div class="detail-row"><span class="detail-label">Next test due</span><span class="detail-val ${od?'overdue':''}">${fmtDate(item.testdate)}${od?' ⚠':''}</span></div>
+  </div>`;}).join('');
+}
+
+function jumpToSN(sn){switchTab('lookup');document.getElementById('lookup-sn').value=sn;doLookup();}
+
+function csvRow(arr){return arr.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')+'\r\n';}
+function exportCSV(){if(!items.length){showToast('No items to export');return;}let csv=csvRow(['SN Number','Description','Status','Site Location','Company','Next Test Due','Test Status']);items.forEach(i=>{csv+=csvRow([i.sn,i.desc,i.location,i.site||'',i.company||'',fmtDate(i.testdate),isOverdue(i.testdate)?'OVERDUE':'OK']);});const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`materials-${new Date().toLocaleDateString('en-GB').replace(/\//g,'-')}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);showToast('✓ Spreadsheet downloaded');}
+function exportLogCSV(){if(!logs.length){showToast('No log entries to export');return;}let csv=csvRow(['SN Number','Action','Date & Time']);logs.forEach(l=>{csv+=csvRow([l.sn,l.msg,fmt(l.time)]);});const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`log-${new Date().toLocaleDateString('en-GB').replace(/\//g,'-')}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);showToast('✓ Log exported');}
+function renderLog(){const list=document.getElementById('log-list');if(!logs.length){list.innerHTML='<div class="empty"><i class="ti ti-history"></i>No activity yet</div>';return;}list.innerHTML=logs.map(l=>`<div class="log-row"><div class="log-row-main"><span>${l.sn}</span> — ${l.msg}</div><div class="log-time">${fmt(l.time)}</div></div>`).join('');}
+
+fetchItems();
+</script>
+</body>
+</html>
