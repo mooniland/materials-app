@@ -73,7 +73,7 @@ app.patch('/api/items/:id', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-
+app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
 app.listen(PORT, () => {
   console.log(`Materials Tracker server running on port ${PORT}`);
 });
