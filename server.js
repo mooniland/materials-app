@@ -13,7 +13,7 @@ const AT_URL = `https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}`;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
 // Get all records
 app.get('/api/items', async (req, res) => {
